@@ -9,11 +9,11 @@ use lazy_static::lazy_static;
 /* Instead of computing its value at compile time,the static laziliy initializes itself when it's accessed the first time.
 Thus, the initialization happens at runtime so that arbitrarily complex initialization code is possible. */
 lazy_static! {
-    pub static ref WRITER: Writer = Writer {
+    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
         color_code: ColorCode::new(Color::Yellow, Color::Black),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    };
+    });
 }
 
 #[allow(dead_code)]
@@ -130,6 +130,39 @@ impl Writer {
     }
 }
 
+impl fmt::Write for Writer {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        self.write_string(s);
+        Ok(())
+    }
+}
+
+// Print to screen helper function (unsafe)
+//pub fn print_to_screen() {
+//    let mut writer = Writer {
+//        column_position: 0,
+//        color_code: ColorCode::new(Color::Yellow, Color::Black),
+//        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+//    };
+//
+//    writer.write_byte(b'H');
+//    writer.write_string("ello!@ ");
+//    writer.write_string("Wörld!");
+//    //write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
+//    //write!(&mut writer, "Hello World");
+//}
+
+
+
+
+
+
+
+
+
+
+
+
 //#[derive(Copy, Clone)]
 //pub struct Arguments<'a> {
 //    // Format string pieces to print.
@@ -217,20 +250,6 @@ impl Writer {
 //    Ok(())
 //}
 
-/// Print to screen helper function (unsafe)
-pub fn print_to_screen() {
-    let mut writer = Writer {
-        column_position: 0,
-        color_code: ColorCode::new(Color::Yellow, Color::Black),
-        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    };
-
-    writer.write_byte(b'H');
-    writer.write_string("ello!@ ");
-    writer.write_string("Wörld!");
-    //write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
-    //write!(&mut writer, "Hello World");
-}
 
 
 //macro_rules! print {
